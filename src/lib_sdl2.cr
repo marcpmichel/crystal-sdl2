@@ -63,6 +63,7 @@ lib LibSDL2
 
   enum PixelFormatEnum
   #TODO
+    SOMETHING
   end
 
   struct PixelFormat
