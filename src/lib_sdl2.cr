@@ -29,6 +29,11 @@ lib LibSDL2
   DISABLE = 0
   ENABLE = 1
 
+  enum Bool
+    SDL_FALSE = 0
+    SDL_TRUE = 1
+  end
+
   enum BlendMode
     NONE = 0x00000000
     BLEND = 0x00000001
@@ -93,6 +98,7 @@ lib LibSDL2
 
   struct Texture
     #TODO
+    something: Int32
   end
 
   enum Key
@@ -130,6 +136,9 @@ lib LibSDL2
     SPACE = 205
   end
 
+
+  alias SDL2_Keycode = Int32
+
   struct KeySym
     scan_code : SDL2::Scancode
     sym : Key # SDL_Keycode
@@ -163,15 +172,21 @@ lib LibSDL2
   end
 
   struct RWops
+    dummy : Int32
   end
-  
+
   struct Point
+    x : Int32
+    y : Int32
   end
 
   type TimerCallback = (UInt32, Void*) -> UInt32
 
   fun init = SDL_Init(flags : SDL2::INIT) : Int32
   fun get_error = SDL_GetError() : UInt8*
+  fun was_init = SDL_WasInit(flags : UInt32) : UInt32
+  fun init_subsystem = SDL_InitSubSystem(flags : UInt32) : Int32
+
   fun quit = SDL_Quit() : Void
   # fun set_video_mode = SDL_SetVideoMode(width : Int32, height : Int32, bpp : Int32, flags : UInt32) : Surface*
   # fun load_bmp = SDL_LoadBMP(file : UInt8*) : Surface*
@@ -218,4 +233,148 @@ lib LibSDL2
 
   fun add_timer = SDL_AddTimer(interval : UInt32, callback : TimerCallback, param : Void*) : Int32
   fun remove_timer = SDL_RemoveTimer(id : Int32) : Int32
+
+
+############### rect
+  fun has_intersection = SDL_HasIntersection( a : Rect*, b : Rect*) : Bool
+  fun intersect_rect = SDL_IntersectRect(a : Rect*, b : Rect*, result : Rect*) : Bool
+  fun union_rect = SDL_UnionRect( a : Rect*, b : Rect*, result : Rect*)
+  #fun enclose_points = SDL_EnclosePoints(points : SDL_Point*, count : Int32, clip : Rect*, result : Rect*)
+  fun intersect_rect_and_line = SDL_IntersectRectAndLine(rect : Rect*, x1 : Int32*, y1 : Int32*, x2 : Int32*, y2 : Int32*) : Bool
+
+############## blend mode
+
+  # enum BlendMode
+  #   SDL_BLENDMODE_NONE = 0x00000000_u32     #< no blending
+  #                                           #	dstRGBA = srcRGBA */
+  #   SDL_BLENDMODE_BLEND = 0x00000001_u32    #< alpha blending
+  #                                           #	dstRGB = (srcRGB * srcA) + (dstRGB * (1-srcA))
+  #                                           #	dstA = srcA + (dstA * (1-srcA)) */
+  #   SDL_BLENDMODE_ADD = 0x00000002_u32      #< additive blending
+  #                                           #	dstRGB = (srcRGB * srcA) + dstRGB
+  #                                           #	dstA = dstA */
+  #   SDL_BLENDMODE_MOD = 0x00000004_u32      #< color modulate
+  #                                           #	dstRGB = srcRGB * dstRGB
+  #                                           #	dstA = dstA */
+  # end
+
+
+############### video
+
+  fun get_num_video_drivers = SDL_GetNumVideoDrivers() : UInt32
+  fun get_video_driver = SDL_GetVideoDriver(n : UInt32) : UInt8*
+  fun get_current_video_driver = SDL_GetCurrentVideoDriver() : UInt8*
+
+  fun video_init = SDL_VideoInit(UInt8*) : Int32
+  fun video_quit = SDL_VideoQuit() : Void
+
+  fun get_num_video_displays = SDL_GetNumVideoDisplays() : Int32
+  fun get_display_name = SDL_GetDisplayName(UInt32) : UInt8*
+  fun get_display_bounds = SDL_GetDisplayBounds(id : UInt32, rect : Rect*) : Int32
+
+
+  struct DisplayMode
+    format : UInt32
+    w : Int32
+    h : Int32
+    refresh_rate : Int32
+    driver_data : Void*
+  end
+
+  enum GLattr
+    SDL_GL_RED_SIZE,
+    SDL_GL_GREEN_SIZE,
+    SDL_GL_BLUE_SIZE,
+    SDL_GL_ALPHA_SIZE,
+    SDL_GL_BUFFER_SIZE,
+    SDL_GL_DOUBLEBUFFER,
+    SDL_GL_DEPTH_SIZE,
+    SDL_GL_STENCIL_SIZE,
+    SDL_GL_ACCUM_RED_SIZE,
+    SDL_GL_ACCUM_GREEN_SIZE,
+    SDL_GL_ACCUM_BLUE_SIZE,
+    SDL_GL_ACCUM_ALPHA_SIZE,
+    SDL_GL_STEREO,
+    SDL_GL_MULTISAMPLEBUFFERS,
+    SDL_GL_MULTISAMPLESAMPLES,
+    SDL_GL_ACCELERATED_VISUAL,
+    SDL_GL_RETAINED_BACKING,
+    SDL_GL_CONTEXT_MAJOR_VERSION,
+    SDL_GL_CONTEXT_MINOR_VERSION,
+    SDL_GL_CONTEXT_EGL,
+    SDL_GL_CONTEXT_FLAGS,
+    SDL_GL_CONTEXT_PROFILE_MASK,
+    SDL_GL_SHARE_WITH_CURRENT_CONTEXT,
+    SDL_GL_FRAMEBUFFER_SRGB_CAPABLE
+  end
+
+
+
+############### cpu info
+  fun get_cpu_count = SDL_GetCPUCount() : Int32
+  fun get_cpu_cache_line_size = SDL_GetCPUCacheLineSize() : Int32
+  fun has_RDTSC = SDL_HasRDTSC() : Bool
+  fun has_alti_vec = SDL_HasAltiVec() : Bool
+  fun has_MMX = SDL_HasMMX() : Bool
+  fun has_3DNow = SDL_Has3DNow() : Bool
+  fun has_SSE = SDL_HasSSE() : Bool
+  fun has_SSE2 = SDL_HasSSE2() : Bool
+  fun has_SSE3 = SDL_HasSSE3() : Bool
+  fun has_SSE41 = SDL_HasSSE41() : Bool
+  fun has_SSE42 = SDL_HasSSE42() : Bool
+  fun has_AVX = SDL_HasAVX() : Bool
+  fun get_system_RAM = SDL_GetSystemRAM() : Int32
+
 end
+
+############ events
+
+  enum EventType
+    SDL_FIRSTEVENT = 0
+    SDL_QUIT = 0x100
+    SDL_APP_TERMINATING
+    SDL_APP_LOWMEMORY
+    SDL_APP_WILLENTERBACKGROUND
+    SDL_APP_DIDENTERBACKGROUND
+    SDL_APP_WILLENTERFOREGROUND
+    SDL_APP_DIDENTERFOREGROUND
+    SDL_WINDOWEVENT = 0x200
+    SDL_SYSWMEVENT
+
+    SDL_KEYDOWN = 0x300
+    SDL_KEYUP
+    SDL_TEXTEDITING
+    SDL_TEXTINPUT
+
+    SDL_MOUSEMOTION = 0x400
+    SDL_MOUSEBUTTONDOWN
+    SDL_MOUSEBUTTONUP
+    SDL_MOUSEWHEEL
+
+    SDL_JOYAXISMOTION = 0x600
+    SDL_JOYBALLMOTION
+    SDL_JOYHATMOTION
+    SDL_JOYBUTTONDOWN
+    SDL_JOYBUTTONUP
+    SDL_JOYDEVICEADDED
+    SDL_JOYDEVICEREMOVED
+
+    SDL_CONTROLLERAXISMOTION = 0x650
+    SDL_CONTROLLERBUTTONDOWN
+    SDL_CONTROLLERBUTTONUP
+    SDL_CONTROLLERDEVICEADDED
+    SDL_CONTROLLERDEVICEREMOVED
+    SDL_CONTROLLERDEVICEREMAPPED
+
+    SDL_FINGERDOWN = 0x700
+    SDL_FINGERUP
+    SDL_FINGERMOTION
+
+    SDL_DOLLARGESTURE = 0x800
+    SDL_DOLLARRECORD
+    SDL_MULTIGESTURE
+
+    SDL_CLIPBOARDUPDATE = 0x900
+    SDL_DROPFILE = 0x1000
+    SDL_RENDER_TARGETS_RESET = 0x2000
+  end
